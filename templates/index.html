@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gemini Chatbot</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f4f4f4; 
+      text-align: center; 
+    }
+
+    #chatbox { 
+      width: 60%; 
+      margin: 20px auto; 
+      background: #fff; 
+      padding: 15px; 
+      border-radius: 10px;
+      height: 400px; 
+      overflow-y: auto; 
+      border: 1px solid #ccc; 
+    }
+
+    .user { 
+      color: blue; 
+      text-align: right; 
+      margin: 5px; 
+    }
+
+    .bot { 
+      color: green; 
+      text-align: left; 
+      margin: 5px; 
+    }
+
+    #inputBox { 
+      width: 70%; 
+      padding: 10px; 
+    }
+
+    #sendBtn { 
+      padding: 10px; 
+      background: #007bff; 
+      color: white; 
+      border: none; 
+      cursor: pointer; 
+    }
+
+    #sendBtn:hover { 
+      background: #0056b3; 
+    }
+  </style>
+</head>
+<body>
+  <h2>🤖 Gemini Web Chatbot</h2>
+
+  <!-- Chat area -->
+  <div id="chatbox"></div>
+
+  <!-- Input box + Send button -->
+  <input type="text" id="inputBox" placeholder="Type your message...">
+  <button id="sendBtn">Send</button>
+
+  <script>
+    const chatbox = document.getElementById("chatbox");
+    const inputBox = document.getElementById("inputBox");
+    const sendBtn = document.getElementById("sendBtn");
+
+    // Function to show messages in the chatbox
+    function appendMessage(sender, message) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = sender;
+      msgDiv.textContent = `${sender === 'user' ? 'You' : 'Gemini'}: ${message}`;
+      chatbox.appendChild(msgDiv);
+      chatbox.scrollTop = chatbox.scrollHeight; // auto scroll
+    }
+
+    // When user clicks send
+    sendBtn.addEventListener("click", async () => {
+      const userMessage = inputBox.value.trim();
+      if (!userMessage) return; // don't send empty
+
+      appendMessage("user", userMessage); // show user message
+      inputBox.value = ""; // clear input
+
+      // Send to backend (Flask server)
+      const response = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage })
+      });
+
+      const data = await response.json(); // get reply
+      appendMessage("bot", data.reply);   // show bot message
+    });
+
+    // Also send when pressing "Enter"
+    inputBox.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        sendBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>
